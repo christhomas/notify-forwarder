@@ -1,0 +1,40 @@
+name: Per-architecture Builds
+on: push
+# should change this in future to only build when tagged
+
+jobs:
+  aarch64-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mlugg/setup-zig@v1
+      - run: |
+          export CC="zig cc -target aarch64-macos-none"
+          export HOST_CC="zig cc"
+          make CC="$CC" HOST_CC="$HOST_CC" TARGET_STRIP="echo"
+          file _build/notify-forwarder
+          _build/notify-forwarder -h || true
+
+  aarch64-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mlugg/setup-zig@v1
+      - run: |
+          export CC="zig cc -target aarch64-linux-gnu"
+          export HOST_CC="zig cc"
+          make CC="$CC" HOST_CC="$HOST_CC" TARGET_STRIP="echo"
+          file _build/notify-forwarder
+          _build/notify-forwarder -h || true
+
+  x86_64-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mlugg/setup-zig@v1
+      - run: |
+          export CC="zig cc -target x86_64-linux-gnu"
+          export HOST_CC="zig cc"
+          make CC="$CC" HOST_CC="$HOST_CC" TARGET_STRIP="echo"
+          file _build/notify-forwarder
+          _build/notify-forwarder -h || true
