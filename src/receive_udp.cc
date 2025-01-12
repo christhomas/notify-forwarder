@@ -5,6 +5,7 @@
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <stdexcept>
 
 #include "receive_udp.h"
 
