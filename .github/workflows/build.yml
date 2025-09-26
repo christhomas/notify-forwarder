@@ -78,12 +78,6 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Sync tag object
-        run: |
-          TAG_NAME="${GITHUB_REF#refs/tags/}"
-          git fetch --force --tags origin "refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}"
-          git tag -ln "${TAG_NAME}"
-
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -98,19 +92,12 @@ jobs:
         run: |
           TAG_NAME="${GITHUB_REF#refs/tags/}"
           shopt -s globstar
+          ARTIFACTS=(dist/**/*.tar.gz)
           if [ ${#ARTIFACTS[@]} -eq 0 ]; then
             echo "No artifacts found to upload" >&2
             exit 1
           fi
           git for-each-ref refs/tags/${TAG_NAME} --format='%(contents)' > release-notes.txt
-          if [ ! -s release-notes.txt ]; then
-            git show "${TAG_NAME}" --no-patch --format=%B | sed '1{/^$/d;}' > release-notes.txt
-          fi
-          if [ ! -s release-notes.txt ]; then
-            echo "Warning: no tag annotation found; falling back to commit message" >&2
-            git show "${TAG_NAME}" --no-patch --format=%s > release-notes.txt
-          fi
-          echo "TAG_NAME: ${TAG_NAME}"
           cat release-notes.txt
           gh release create "${TAG_NAME}" "${ARTIFACTS[@]}" \
             --title "Notify Forwarder ${TAG_NAME}" \
