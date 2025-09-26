@@ -1,5 +1,4 @@
 #include "watch_null.h"
-
 #include "platform.h"
 
 #include <condition_variable>

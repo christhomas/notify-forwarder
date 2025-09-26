@@ -1,3 +1,5 @@
 /_build
 /src/*.d
 /src/*.o
+.idea
+.history

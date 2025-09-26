@@ -1,40 +1,83 @@
-name: Per-architecture Builds
-on: push
-# should change this in future to only build when tagged
+name: Build notify-forwarder
+
+on:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
 
 jobs:
-  aarch64-macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: mlugg/setup-zig@v1
-      - run: |
-          export CC="zig cc -target aarch64-macos-none"
-          export HOST_CC="zig cc"
-          make CC="$CC" HOST_CC="$HOST_CC" TARGET_STRIP="echo"
-          file _build/notify-forwarder
-          _build/notify-forwarder -h || true
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - target: darwin_arm64
+            runner: macos-latest
+            out_dir: Darwin_arm64
+            artifact: notify-forwarder-darwin-arm64
+            install_zig: false
+          - target: darwin_x86_64
+            runner: macos-latest
+            out_dir: Darwin_x86_64
+            artifact: notify-forwarder-darwin-x86_64
+            install_zig: false
+          - target: linux_arm64
+            runner: ubuntu-latest
+            out_dir: Linux_arm64
+            artifact: notify-forwarder-linux-arm64
+            install_zig: true
+          - target: linux_x86_64
+            runner: ubuntu-latest
+            out_dir: Linux_x86_64
+            artifact: notify-forwarder-linux-x86_64
+            install_zig: true
 
-  aarch64-linux:
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Zig
+        if: ${{ matrix.install_zig }}
+        uses: mlugg/setup-zig@v1
+
+      - name: Build target
+        run: |
+          make clean
+          make ${{ matrix.target }}
+          file _build/${{ matrix.out_dir }}/notify-forwarder
+          _build/${{ matrix.out_dir }}/notify-forwarder -h || true
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          cp _build/${{ matrix.out_dir }}/notify-forwarder dist/notify-forwarder-${{ matrix.target }}
+          (cd dist && tar -czf ${{ matrix.artifact }}.tar.gz notify-forwarder-${{ matrix.target }})
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.artifact }}.tar.gz
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: mlugg/setup-zig@v1
-      - run: |
-          export CC="zig cc -target aarch64-linux-gnu"
-          export HOST_CC="zig cc"
-          make CC="$CC" HOST_CC="$HOST_CC" TARGET_STRIP="echo"
-          file _build/notify-forwarder
-          _build/notify-forwarder -h || true
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
 
-  x86_64-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: mlugg/setup-zig@v1
-      - run: |
-          export CC="zig cc -target x86_64-linux-gnu"
-          export HOST_CC="zig cc"
-          make CC="$CC" HOST_CC="$HOST_CC" TARGET_STRIP="echo"
-          file _build/notify-forwarder
-          _build/notify-forwarder -h || true
+      - name: List artifacts
+        run: ls -R dist
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/**/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
