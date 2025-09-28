@@ -49,15 +49,37 @@ jobs:
           _build/${{ matrix.out_dir }}/notify-forwarder -h || true
 
       - name: Verify binary architecture
-        if: ${{ matrix.target == 'linux_arm64' }}
         run: |
-          file _build/${{ matrix.out_dir }}/notify-forwarder | grep -E "ARM aarch64"
+          FILE_OUTPUT="$(file _build/${{ matrix.out_dir }}/notify-forwarder)"
+          echo "$FILE_OUTPUT"
+          case "${{ matrix.target }}" in
+            darwin_arm64)
+              PATTERN="Mach-O 64-bit executable arm64"
+              ;;
+            darwin_x86_64)
+              PATTERN="Mach-O 64-bit executable x86_64"
+              ;;
+            linux_arm64)
+              PATTERN="ELF 64-bit LSB executable, ARM aarch64"
+              ;;
+            linux_x86_64)
+              PATTERN="ELF 64-bit LSB executable, x86-64"
+              ;;
+            *)
+              echo "No architecture pattern configured for target ${{ matrix.target }}" >&2
+              exit 1
+              ;;
+          esac
+          if ! grep -q "$PATTERN" <<< "$FILE_OUTPUT"; then
+            echo "Unexpected architecture for ${{ matrix.target }}" >&2
+            exit 1
+          fi
 
       - name: Package artifact
         run: |
           mkdir -p dist
           cp _build/${{ matrix.out_dir }}/notify-forwarder dist/notify-forwarder-${{ matrix.target }}
-          ls -l dist
+          find dist
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -93,7 +115,7 @@ jobs:
           TAG_NAME="${GITHUB_REF#refs/tags/}"
           shopt -s globstar
           find dist
-          ARTIFACTS=(dist/notify-forwarder-*)
+          ARTIFACTS=(dist/**/notify-forwarder-*)
           if [ ${#ARTIFACTS[@]} -eq 0 ]; then
             echo "No artifacts found to upload" >&2
             exit 1
