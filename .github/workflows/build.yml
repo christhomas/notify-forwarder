@@ -57,13 +57,13 @@ jobs:
         run: |
           mkdir -p dist
           cp _build/${{ matrix.out_dir }}/notify-forwarder dist/notify-forwarder-${{ matrix.target }}
-          (cd dist && tar -czf ${{ matrix.artifact }}.tar.gz notify-forwarder-${{ matrix.target }})
+          ls -l dist
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
-          path: dist/${{ matrix.artifact }}.tar.gz
+          path: dist/notify-forwarder-${{ matrix.target }}
           if-no-files-found: error
 
   release:
@@ -92,7 +92,7 @@ jobs:
         run: |
           TAG_NAME="${GITHUB_REF#refs/tags/}"
           shopt -s globstar
-          ARTIFACTS=(dist/**/*.tar.gz)
+          ARTIFACTS=(dist/**/notify-forwarder-*)
           if [ ${#ARTIFACTS[@]} -eq 0 ]; then
             echo "No artifacts found to upload" >&2
             exit 1
