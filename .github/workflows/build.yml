@@ -114,13 +114,13 @@ jobs:
         run: |
           TAG_NAME="${GITHUB_REF#refs/tags/}"
           shopt -s globstar
-          find dist
-          ARTIFACTS=(dist/**/notify-forwarder-*)
+          mapfile -t ARTIFACTS < <(find dist -type f -name 'notify-forwarder-*' -print)
           if [ ${#ARTIFACTS[@]} -eq 0 ]; then
             echo "No artifacts found to upload" >&2
             exit 1
           fi
-          echo "ARTIFACTS: '${ARTIFACTS[@]}'"
+          printf 'Discovered release artifacts:\n'
+          printf '  %s\n' "${ARTIFACTS[@]}"
           git for-each-ref refs/tags/${TAG_NAME} --format='%(contents)' > release-notes.txt
           cat release-notes.txt
           gh release create "${TAG_NAME}" "${ARTIFACTS[@]}" \
