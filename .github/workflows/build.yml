@@ -92,6 +92,7 @@ jobs:
         run: |
           TAG_NAME="${GITHUB_REF#refs/tags/}"
           shopt -s globstar
+          find dist
           ARTIFACTS=(dist/notify-forwarder-*)
           if [ ${#ARTIFACTS[@]} -eq 0 ]; then
             echo "No artifacts found to upload" >&2
