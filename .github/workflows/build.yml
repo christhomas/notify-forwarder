@@ -106,7 +106,7 @@ jobs:
           path: dist
 
       - name: List artifacts
-        run: ls -R dist
+        run: find dist
 
       - name: Create GitHub release
         env:
