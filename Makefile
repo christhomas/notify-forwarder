@@ -81,7 +81,8 @@ ifeq ($(TARGET_OS),Darwin)
 else ifeq ($(TARGET_OS),Linux)
 	SRCS += src/watch_inotify.cc
 	WATCH_PLUGIN_TYPE := InotifyWatchPlugin
-	CXX_TOOLCHAIN := zig c++ -target $(ZIG_ARCH)-linux-gnu
+	ZIG_TARGET := $(ZIG_ARCH)-linux-$(if $(filter arm,$(ZIG_ARCH)),gnueabihf,gnu)
+	CXX_TOOLCHAIN := zig c++ -target $(ZIG_TARGET)
 else
 	$(error Unsupported TARGET_OS '$(TARGET_OS)')
 endif
