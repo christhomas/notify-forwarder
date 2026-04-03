@@ -4,7 +4,7 @@ HOST_ARCH := $(shell uname -m)
 TARGET_OS ?= $(HOST_OS)
 TARGET_ARCH ?= $(HOST_ARCH)
 
-SUPPORTED_TARGETS := darwin_arm64 darwin_x86_64 linux_arm64 linux_x86_64
+SUPPORTED_TARGETS := darwin_arm64 darwin_x86_64 linux_arm64 linux_armv7l linux_x86_64
 DEFAULT_TARGETS := $(SUPPORTED_TARGETS)
 
 .PHONY: $(SUPPORTED_TARGETS)
@@ -19,6 +19,7 @@ endef
 $(eval $(call add_target,darwin_arm64,Darwin,arm64))
 $(eval $(call add_target,darwin_x86_64,Darwin,x86_64))
 $(eval $(call add_target,linux_arm64,Linux,arm64))
+$(eval $(call add_target,linux_armv7l,Linux,armv7l))
 $(eval $(call add_target,linux_x86_64,Linux,x86_64))
 
 ifneq ($(strip $(MAKECMDGOALS)),)
@@ -60,7 +61,7 @@ PLATFORM_CXXFLAGS :=
 PLATFORM_LDFLAGS :=
 CXX_TOOLCHAIN := c++
 
-ZIG_ARCH := $(if $(filter arm64,$(TARGET_ARCH)),aarch64,x86_64)
+ZIG_ARCH := $(if $(filter arm64,$(TARGET_ARCH)),aarch64,$(if $(filter armv7l,$(TARGET_ARCH)),arm,x86_64))
 
 ifeq ($(TARGET_OS),Darwin)
 	SRCS += src/watch_fsevents.cc

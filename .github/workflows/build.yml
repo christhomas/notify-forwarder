@@ -28,6 +28,11 @@ jobs:
             out_dir: Linux_arm64
             artifact: notify-forwarder-linux-arm64
             install_zig: true
+          - target: linux_armv7l
+            runner: ubuntu-latest
+            out_dir: Linux_armv7l
+            artifact: notify-forwarder-linux-armv7l
+            install_zig: true
           - target: linux_x86_64
             runner: ubuntu-latest
             out_dir: Linux_x86_64
@@ -61,6 +66,9 @@ jobs:
               ;;
             linux_arm64)
               PATTERN="ELF 64-bit LSB executable, ARM aarch64"
+              ;;
+            linux_armv7l)
+              PATTERN="ELF 32-bit LSB executable, ARM"
               ;;
             linux_x86_64)
               PATTERN="ELF 64-bit LSB executable, x86-64"
