@@ -13,7 +13,7 @@ define add_target
 .PHONY: $1
 $1:
 	@echo "Building $1"
-	@$(MAKE) --no-print-directory TARGET_OS=$2 TARGET_ARCH=$3 ZIG_ARCH=$(if $(filter arm64,$3),aarch64,x86_64) build
+	@$(MAKE) --no-print-directory TARGET_OS=$2 TARGET_ARCH=$3 ZIG_ARCH=$(if $(filter arm64,$3),aarch64,$(if $(filter armv7l,$3),arm,x86_64)) build
 endef
 
 $(eval $(call add_target,darwin_arm64,Darwin,arm64))
