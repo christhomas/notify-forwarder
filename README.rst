@@ -37,6 +37,7 @@ single target with:
    $ make darwin_arm64      # macOS arm64
    $ make darwin_x86_64     # macOS x86_64
    $ make linux_arm64       # Linux arm64 (requires Zig for cross-compilation)
+   $ make linux_armv7l      # Linux armv7l/ARM32 (requires Zig for cross-compilation)
    $ make linux_x86_64      # Linux x86_64 (requires Zig for cross-compilation)
 
 On Linux hosts you will need ``zig`` available when building the cross
@@ -72,14 +73,38 @@ editor. The "client side" is where the auto reloading build system runs.
 .. _notify-forwarder_freebsd_x64: https://github.com/mhallin/notify-forwarder/releases/download/release%2Fv0.1.0/notify-forwarder_freebsd_x64
 
 
+Supported architectures
+=======================
+
++-----------------+------+-------+
+| Platform        | Host | Guest |
++=================+======+=======+
+| macOS arm64     |  ✓   |  —    |
++-----------------+------+-------+
+| macOS x86_64    |  ✓   |  —    |
++-----------------+------+-------+
+| Linux arm64     |  ✓   |  ✓    |
++-----------------+------+-------+
+| Linux armv7l    |  —   |  ✓    |
++-----------------+------+-------+
+| Linux x86_64    |  ✓   |  ✓    |
++-----------------+------+-------+
+
+
 Changelog
 =========
 
 This changelog highlights recent changes. Earlier versions did not track
 changes here.
 
-2025-09-26
-----------
+v1.1.0 — 2026-04-03
+--------------------
+
+- Added Linux armv7l (ARM32) build target for Raspberry Pi guest support.
+- Cross-compiled via Zig with ``arm-linux-gnueabihf`` target.
+
+v1.0.0 — 2025-09-26
+--------------------
 
 - Added a matrix-based GitHub Actions workflow that builds and packages
   binaries for ``darwin_arm64``, ``darwin_x86_64``, ``linux_arm64`` and
